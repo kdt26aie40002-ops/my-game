@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Bouncy Buddies - バウンシー・バディーズ</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='55' r='40' fill='%23ff8552'/><circle cx='36' cy='48' r='9' fill='white'/><circle cx='64' cy='48' r='9' fill='white'/><circle cx='37' cy='50' r='5' fill='%232b2140'/><circle cx='65' cy='50' r='5' fill='%232b2140'/></svg>" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@500;800&display=swap" rel="stylesheet" />
+  </head>
+  <body>
+    <div id="app">
+      <div id="game-container"></div>
+
+      <!-- ===== プレイ中の表示 ===== -->
+      <div id="hud" class="hidden">
+        <div class="hud-bar">
+          <div class="hud-left">
+            <div class="hud-chip stage-chip"><span id="hud-stage">ステージ1</span></div>
+            <div class="hud-chip"><span class="chip-icon">🚩</span><span id="hud-checkpoint">スタート</span></div>
+          </div>
+          <div class="hud-center">
+            <div class="hud-timer" id="hud-timer">0:00.0</div>
+          </div>
+          <div class="hud-right">
+            <div class="hud-chip"><span class="chip-icon">⭐</span><span id="hud-stars">0/0</span></div>
+            <div class="hud-chip"><span class="chip-icon">💫</span>落下 <span id="hud-falls">0</span></div>
+            <button class="hud-pause" id="btn-pause" title="ポーズ (Esc)">❚❚</button>
+          </div>
+        </div>
+        <div id="split-divider" class="hidden"></div>
+        <div id="split-labels" class="hidden">
+          <div class="split-label p1">1P</div>
+          <div class="split-label p2">2P</div>
+        </div>
+        <div id="big-text" class="hidden"></div>
+        <div id="toast" class="hidden"></div>
+        <div id="controls-hint"></div>
+      </div>
+
+      <!-- ===== 読み込み中 ===== -->
+      <div id="screen-loading" class="screen">
+        <div class="loading-box">
+          <div class="loading-ball"></div>
+          <p>よみこみ中…</p>
+        </div>
+      </div>
+
+      <!-- ===== タイトル ===== -->
+      <div id="screen-title" class="screen hidden">
+        <div class="title-wrap">
+          <h1 class="logo">
+            <span class="logo-line">
+              <span style="--c:#ff7a45">B</span><span style="--c:#ffc93c">o</span><span style="--c:#4fd18b">u</span><span style="--c:#4fb4ff">n</span><span style="--c:#a77bff">c</span><span style="--c:#ff5d8f">y</span>
+            </span>
+            <span class="logo-line">
+              <span style="--c:#4fb4ff">B</span><span style="--c:#ff7a45">u</span><span style="--c:#ffc93c">d</span><span style="--c:#4fd18b">d</span><span style="--c:#ff5d8f">i</span><span style="--c:#a77bff">e</span><span style="--c:#4fb4ff">s</span>
+            </span>
+          </h1>
+          <p class="logo-sub">バウンシー・バディーズ ～ ころころ天空アスレチック ～</p>
+          <div class="menu">
+            <button class="btn btn-big btn-orange" data-action="mode1">🙂 1人プレイ</button>
+            <button class="btn btn-big btn-blue" data-action="mode2">🙂🙂 2人プレイ</button>
+            <div class="menu-row">
+              <button class="btn btn-mid" data-action="howto">📖 操作説明</button>
+              <button class="btn btn-mid" data-action="settings">⚙️ 設定</button>
+            </div>
+          </div>
+        </div>
+        <p class="title-foot">ころんでも、落ちても、何度でもチャレンジ！</p>
+      </div>
+
+      <!-- ===== ステージ選択 ===== -->
+      <div id="screen-stages" class="screen hidden">
+        <div class="panel panel-wide">
+          <h2 id="stages-title">ステージをえらぼう</h2>
+          <div id="stage-list" class="stage-list"></div>
+          <div class="panel-buttons">
+            <button class="btn btn-mid" data-action="back">← もどる</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== 操作説明 ===== -->
+      <div id="screen-howto" class="screen hidden">
+        <div class="panel panel-wide">
+          <h2>📖 操作説明</h2>
+          <div class="howto-grid">
+            <div class="howto-card p1">
+              <h3>1P（オレンジ）</h3>
+              <ul id="howto-p1"></ul>
+            </div>
+            <div class="howto-card p2">
+              <h3>2P（ブルー）</h3>
+              <ul id="howto-p2"></ul>
+            </div>
+          </div>
+          <div class="howto-tips">
+            <p>🎮 ゲームパッド：左スティック/十字キーで移動、A(×)でジャンプ、X(□)でダイブ、Y(△)で復帰、STARTでポーズ。1台目が1P、2台目が2Pになります。</p>
+            <p>💡 1人プレイでは矢印キーと Enter でも操作できます。Esc でいつでもポーズできます。</p>
+            <p>🤝 2人プレイ：相棒の頭にのってジャンプすると、高い所にとどきます！ ダイブで相棒を突きとばすこともできます。どちらかがチェックポイントを通ると、2人ともそこから復帰できます。</p>
+            <p>⭐ 各ステージにスターがかくれています。全部あつめられるかな？</p>
+          </div>
+          <div class="panel-buttons">
+            <button class="btn btn-mid" data-action="back">← もどる</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== 設定 ===== -->
+      <div id="screen-settings" class="screen hidden">
+        <div class="panel panel-wide settings-panel">
+          <h2>⚙️ 設定</h2>
+          <div class="settings-scroll">
+            <section>
+              <h3>サウンド</h3>
+              <label class="row"><span>サウンド</span><input type="checkbox" id="set-sound" /></label>
+              <label class="row"><span>BGM 音量</span><input type="range" id="set-bgm" min="0" max="1" step="0.05" /></label>
+              <label class="row"><span>効果音 音量</span><input type="range" id="set-sfx" min="0" max="1" step="0.05" /></label>
+            </section>
+            <section>
+              <h3>画面</h3>
+              <label class="row"><span>影を表示</span><input type="checkbox" id="set-shadows" /></label>
+              <label class="row"><span>2人プレイのカメラ</span>
+                <select id="set-split">
+                  <option value="auto">自動（離れたら画面分割）</option>
+                  <option value="shared">いつも1画面</option>
+                  <option value="split">いつも画面分割</option>
+                </select>
+              </label>
+            </section>
+            <section>
+              <h3>操作感</h3>
+              <label class="row"><span>移動の速さ <b id="val-speed"></b></span><input type="range" id="set-speed" min="0.6" max="1.5" step="0.05" /></label>
+              <label class="row"><span>ジャンプ力 <b id="val-jump"></b></span><input type="range" id="set-jump" min="0.8" max="1.3" step="0.05" /></label>
+              <label class="row"><span>空中での操作しやすさ <b id="val-air"></b></span><input type="range" id="set-air" min="0.3" max="2" step="0.05" /></label>
+              <label class="row"><span>向きを変える速さ <b id="val-turn"></b></span><input type="range" id="set-turn" min="0.4" max="2" step="0.05" /></label>
+              <div class="row-right"><button class="btn btn-small" id="btn-reset-tuning">初期値にもどす</button></div>
+            </section>
+            <section>
+              <h3>キー設定 <small>（ボタンを押してから、割り当てたいキーを押してください）</small></h3>
+              <div id="bind-table" class="bind-table"></div>
+              <div class="row-right"><button class="btn btn-small" id="btn-reset-keys">キー設定を初期値にもどす</button></div>
+            </section>
+          </div>
+          <div class="panel-buttons">
+            <button class="btn btn-mid" data-action="back">← もどる</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== ポーズ ===== -->
+      <div id="screen-pause" class="screen dim hidden">
+        <div class="panel">
+          <h2>ポーズ中</h2>
+          <div class="menu">
+            <button class="btn btn-big btn-green" data-action="resume">▶ ゲーム再開</button>
+            <button class="btn btn-mid" data-action="checkpoint">🚩 チェックポイントへ戻る</button>
+            <button class="btn btn-mid" data-action="restart">↻ ステージをやり直す</button>
+            <div class="menu-row">
+              <button class="btn btn-mid" data-action="howto">📖 操作説明</button>
+              <button class="btn btn-mid" data-action="settings">⚙️ 設定</button>
+            </div>
+            <button class="btn btn-mid btn-gray" data-action="title">🏠 タイトルへ戻る</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== クリア ===== -->
+      <div id="screen-clear" class="screen dim hidden">
+        <div class="panel clear-panel">
+          <h2 class="clear-title" id="clear-title">ステージクリア！</h2>
+          <p class="clear-stage" id="clear-stage"></p>
+          <div class="clear-stats">
+            <div class="stat"><span class="stat-label">クリアタイム</span><span class="stat-value" id="clear-time">0:00.0</span><span class="stat-note" id="clear-best"></span></div>
+            <div class="stat"><span class="stat-label">落下回数</span><span class="stat-value" id="clear-falls">0</span></div>
+            <div class="stat"><span class="stat-label">スター</span><span class="stat-value" id="clear-stars">0/0</span></div>
+          </div>
+          <p class="clear-msg" id="clear-msg"></p>
+          <div class="menu">
+            <button class="btn btn-big btn-orange" data-action="next" id="btn-next">次のステージへ ▶</button>
+            <div class="menu-row">
+              <button class="btn btn-mid" data-action="restart">↻ リトライ</button>
+              <button class="btn btn-mid btn-gray" data-action="title">🏠 タイトルへ</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
